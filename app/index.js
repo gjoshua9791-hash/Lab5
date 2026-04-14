@@ -5,11 +5,11 @@ export default function Index() {
   const [screen, setScreen] = useState('dashboard');
 
   const initialStocks = [
-    { id: 1, name: 'NFR', value: 130, change: 0 },
-    { id: 2, name: 'PESO', value: 150, change: 0 },
-    { id: 3, name: 'CATO', value: 80, change: 0 },
-    { id: 4, name: 'PACO', value: 90, change: 0 },
-    { id: 5, name: 'DPR', value: 75, change: 0 },
+    { id: 1, name: '$NFR', value: 130, change: 0 },
+    { id: 2, name: '$PESO', value: 150, change: 0 },
+    { id: 3, name: '$CATO', value: 80, change: 0 },
+    { id: 4, name: '$PACO', value: 90, change: 0 },
+    { id: 5, name: '$DPR', value: 75, change: 0 },
   ];
 
   const initialPumps = [
@@ -25,9 +25,28 @@ export default function Index() {
   const [nameCount, setNameCount] = useState('10');
   const [generatedNames, setGeneratedNames] = useState([]);
   const [nameHistory, setNameHistory] = useState([]);
+  const [stocksPaused, setStocksPaused] = useState(false);
 
+  useEffect(() => {
+    if(stocksPaused) return;
+
+    const interval = setInterval(() => {
+      setStocks((prevStocks) => prevStocks.map((stock) => {
+        const change = Math.floor(Math.random() * 21) - 10;
+        let newValue = stock.value + change;
+        if(newValue < 0) newValue =0;
+        if(newValue > 200) newValue = 200;
+        return { ...stock, value: newValue, change: change };
+      }));
+    }, 1000);
+    return() => clearInterval(interval);
+  }, [stocksPaused]);
+
+  const sortedStocks = useMemo(() => {
+    return [...stocks].sort((x, y) => y.value - x.value);
+  }, [stocks]);
   const averageStockValue = stocks.reduce((sum, stock) => sum + stock.value, 0) / stocks.length;
-  const topStock = [...stocks].sort((x, y) => y.value - x.value)[0];
+  const topStock = sortedStocks[0];
   const totalPumped = pumps.reduce((sum, pump) => sum + pump.total, 0);
   const activePumpCount = pumps.filter((pump) => pump.active).length;
 
@@ -57,7 +76,25 @@ export default function Index() {
         </View>)}
 
           {screen === 'stocks' && (<View style={styles.card}>
-        <Text style={styles.sectionTitle}>Stocks</Text></View>)}
+        <Text style={styles.sectionTitle}>Stocks</Text>
+        {sortedStocks.map((stock) => (
+          <View key={stock.id} style={[styles.stockRow, topStock && stock.id === topStock.id ? styles.topStock : null]}>
+            <View style={styles.stockHeader}>
+              <Text style={styles.stockName}>{stock.name}</Text>
+              <Text style={styles.stockValue}>${stock.value}</Text>
+            </View>
+            <Text style={[ styles.changeText, stock.change > 0 ? styles.positiveChange : stock.change < 0 ? styles.negativeChange : null]}>
+            Change: {stock.change > 0 ? '+' : ''} {stock.change}</Text>
+
+            <View styles={styles.barBackground}> 
+              <View style={[styles.barFill, {width: `${(stock.value / 200) * 100}%`},
+
+              ]}
+              />
+            </View>
+          </View>
+        ))}
+        </View>)}
 
            {screen === 'names' && (<View style={styles.card}>
         <Text style={styles.sectionTitle}>Name Generator</Text></View>)}
@@ -134,5 +171,50 @@ const styles = StyleSheet.create ({
     marginBottom: 6,
     color: '#405473',
   },
+  stockRow: {
+    padding: 12,
+    marginBottom: 12,
+    backgroundColor: '#f9fafb',
+    borderRadius: 10,
+  },
+  topStock: {
+    borderWidth: 2,
+    borderColor: '#f59e0b',
+  },
+  stockHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  stockName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  stockValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  changeText: {
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  positiveChange: {
+    color: '#27ca66',
+  },
+  negativeChange: {
+    color: '#ea3636',
+  },
+  barBackground: {
+    backgroundColor: '#e5e7eb',
+    borderRadius: 8,
+    height: 18,
+    overflow: 'hidden',
+  },
+  barFill: {
+    backgroundColor: '#4f46e5',
+    borderRadius: 8,
+    height: '100%',
+  },
+
 }
 );
