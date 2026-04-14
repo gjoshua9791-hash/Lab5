@@ -4,6 +4,33 @@ import { ScrollView, StyleSheet, Text, TextInput, View, Pressable } from 'react-
 export default function Index() {
   const [screen, setScreen] = useState('dashboard');
 
+  const initialStocks = [
+    { id: 1, name: 'NFR', value: 130, change: 0 },
+    { id: 2, name: 'PESO', value: 150, change: 0 },
+    { id: 3, name: 'CATO', value: 80, change: 0 },
+    { id: 4, name: 'PACO', value: 90, change: 0 },
+    { id: 5, name: 'DPR', value: 75, change: 0 },
+  ];
+
+  const initialPumps = [
+    { id: 1, value: 25, direction: 1, total: 0, active: true },
+    { id: 2, value: 30, direction: -1, total: 0, active: true },
+    { id: 3, value: 50, direction: 1, total: 0, active: true },
+    { id: 4, value: 45, direction: -1, total: 0, active: true },
+    { id: 5, value: 60, direction: 1, total: 0, active: true },
+  ];
+
+  const [stocks, setStocks] = useState(initialStocks);
+  const [pumps, setPumps] = useState(initialPumps);
+  const [nameCount, setNameCount] = useState('10');
+  const [generatedNames, setGeneratedNames] = useState([]);
+  const [nameHistory, setNameHistory] = useState([]);
+
+  const averageStockValue = stocks.reduce((sum, stock) => sum + stock.value, 0) / stocks.length;
+  const topStock = [...stocks].sort((x, y) => y.value - x.value)[0];
+  const totalPumped = pumps.reduce((sum, pump) => sum + pump.total, 0);
+  const activePumpCount = pumps.filter((pump) => pump.active).length;
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Lab 5</Text>
@@ -16,7 +43,18 @@ export default function Index() {
       </View>
 
       {screen === 'dashboard' && (<View style={styles.card}>
-        <Text style={styles.sectionTitle}>Dashboard</Text></View>)}
+        <Text style={styles.sectionTitle}>Dashboard</Text>
+        
+        <Text style={styles.infoText}>Total Stocks: {stocks.length}</Text>
+        <Text style={styles.infoText}>Average Stock Value: {averageStockValue.toFixed(2)}</Text>
+        <Text style={styles.infoText}>Top Stock: {topStock.name} (${topStock.value.toFixed(2)})</Text>
+        <Text style={styles.infoText}>Total Pumped: {totalPumped}</Text>
+        <Text style={styles.infoText}>Active Pumps: {activePumpCount}</Text>
+        <Text style={styles.infoText}>Generated Names: {generatedNames.length}</Text>
+        <Text style={styles.infoText}>Name History: {nameHistory.join(', ')}</Text>
+        
+        
+        </View>)}
 
           {screen === 'stocks' && (<View style={styles.card}>
         <Text style={styles.sectionTitle}>Stocks</Text></View>)}
@@ -91,5 +129,10 @@ const styles = StyleSheet.create ({
     marginBottom: 16,
     color: '#4a7dc9',
   },
-  }
+  infoText: {
+    fontSize: 16,
+    marginBottom: 6,
+    color: '#405473',
+  },
+}
 );
