@@ -29,6 +29,7 @@ export default function Index() {
   const [generatedNames, setGeneratedNames] = useState([]);
   const [nameHistory, setNameHistory] = useState([]);
   const [stocksPaused, setStocksPaused] = useState(false);
+  const [oilPaused, setOilPaused] = useState(false);
 
   useEffect(() => {
     if(stocksPaused) return;
@@ -69,6 +70,31 @@ export default function Index() {
     setNameHistory((prevHistory) => [newNames, ...prevHistory]);
   };
 
+  useEffect(() => {
+    if(oilPaused) return;
+
+    const interval = setInterval(() => {
+      setPumps((prevPumps) => prevPumps.map((pump) => {
+        if(!pump.active) return pump;
+        let newValue = pump.value + pump.direction * 5;
+        let newDirection = pump.direction;
+        if(newValue <= 0) {
+          newValue = 0;
+          newDirection = 1;
+        }
+        if(newValue >= 100) {
+          newValue = 100;
+          newDirection = -1;
+        }
+        return { ...pump, value: newValue, direction: newDirection, total: pump.total + newValue };
+    })); }, 1000);
+    return () => clearInterval(interval);
+  }, [oilPaused]);
+
+  const togglePump = (id) => {
+    setPumps((prevPumps) => prevPumps.map((pump) => pump.id === id ? { ...pump, active: !pump.active} : pump));
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Lab 5</Text>
@@ -89,7 +115,7 @@ export default function Index() {
         <Text style={styles.infoText}>Total Pumped: {totalPumped}</Text>
         <Text style={styles.infoText}>Active Pumps: {activePumpCount}</Text>
         <Text style={styles.infoText}>Generated Names: {generatedNames.length}</Text>
-        <Text style={styles.infoText}>Name History: {nameHistory.join(', ')}</Text>
+        <Text style={styles.infoText}>Name History: {nameHistory.length}</Text>
         
         
         </View>)}
@@ -142,7 +168,25 @@ export default function Index() {
         </View>)}
 
           {screen === 'oil' && (<View style={styles.card}>
-        <Text style={styles.sectionTitle}>Oil Pump Monitor</Text></View>)}
+        <Text style={styles.sectionTitle}>Oil Pump Monitor</Text>
+        
+        {pumps.map((pump) => (
+          <View key={pump.id} style={styles.pumpCard}>
+            <Text style={styles.pumpTitle}>Pump {pump.id}</Text>
+            <Text style={styles.infoText}>Current Value: {pump.value}</Text>
+            <Text style={styles.infoText}>Direction: {pump.direction === 1 ? 'Increasing' : 'Decreasing'}</Text>
+            <Text style={styles.infoText}>Total Pumped: {pump.total}</Text>
+            <Text style={styles.infoText}>Status: {pump.active ? 'Active' : 'Inactive'}</Text>
+
+            {pump.value >= 80 && <Text style={styles.highAlert}>High Value Alert!</Text>}
+            {pump.value <= 20 && <Text style={styles.lowAlert}>Low Value Alert</Text>}
+
+            <Pressable style={styles.toggleButton} onPress={() => togglePump(pump.id)}
+            ><Text style={styles.controlButtonText}>{pump.active ? 'Turn Off Pump' : 'Turn On Pump'}</Text></Pressable>
+            </View>
+        ))}
+        
+        </View>)}
 
     </ScrollView>
   );
@@ -296,5 +340,35 @@ const styles = StyleSheet.create ({
     fontWeight: '600',
     marginBottom: 6,
   },
+  pumpCard: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+  },
+  pumpTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  highAlert: {
+    color: '#ea3636',
+    fontWeight: 'bold',
+    marginTop: 6,
+    marginBottom: 6,  },
+  lowAlert: {
+    color: '#27ca66',
+    fontWeight: 'bold',
+    marginTop: 6,
+    marginBottom: 6, 
+  },
+  toggleButton: {
+    backgroundColor: '#7c3aed',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    marginTop: 8,
+    alignSelf: 'flex-start',
+  },  
 }
 );
