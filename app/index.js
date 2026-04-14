@@ -20,6 +20,9 @@ export default function Index() {
     { id: 5, value: 60, direction: 1, total: 0, active: true },
   ];
 
+  const firstNames = ['Alex', 'Edgar', 'Joshua', 'Joseph', 'Adriana', 'Kaushiki', 'Donovan', 'Sylas', 'Brenda', 'Isaiah', 'Nebo'];
+  const lastNames = [ 'Vartanian', 'Rosales', 'Garcia', 'Bentley', 'Villalta', 'Dubey', 'Mcgilbray', 'Sanchez', 'Murillo', 'Urquilla', 'Paul'];
+
   const [stocks, setStocks] = useState(initialStocks);
   const [pumps, setPumps] = useState(initialPumps);
   const [nameCount, setNameCount] = useState('10');
@@ -49,6 +52,22 @@ export default function Index() {
   const topStock = sortedStocks[0];
   const totalPumped = pumps.reduce((sum, pump) => sum + pump.total, 0);
   const activePumpCount = pumps.filter((pump) => pump.active).length;
+
+  const generateNames = () => {
+    const maxNames = firstNames.length * lastNames.length;
+    const requestedCount = Math.min(Math.max(parseInt(nameCount) || 0, 0), maxNames);
+    const uniqueNames = new Set();
+
+    while(uniqueNames.size < requestedCount) {
+      const first = firstNames[Math.floor(Math.random() * firstNames.length)];
+      const last = lastNames[Math.floor(Math.random() * lastNames.length)];
+      uniqueNames.add(`${first} ${last}`);
+
+    }
+    const newNames = Array.from(uniqueNames);
+    setGeneratedNames(newNames);
+    setNameHistory((prevHistory) => [newNames, ...prevHistory]);
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -97,7 +116,30 @@ export default function Index() {
         </View>)}
 
            {screen === 'names' && (<View style={styles.card}>
-        <Text style={styles.sectionTitle}>Name Generator</Text></View>)}
+        <Text style={styles.sectionTitle}>Name Generator</Text>
+        <Text styles={styles.label}>Number of Names to Generate:</Text>
+        <TextInput style={styles.input} value={nameCount} onChangeText={setNameCount} keyboardType="numeric" placeholder="Enter a number" />
+        <Pressable style={styles.generateButton} onPress={generateNames}>
+          <Text style={styles.controlButtonText}>Generate Names</Text>
+        </Pressable>
+        <Text style={styles.subheading}>Generated Names:</Text>
+        {generatedNames.length === 0 ? ( <Text style={styles.infoText}>No names generated yet.</Text> ) : (
+          generatedNames.map((name, index) => (<Text key={`${name}-${index}`} style={styles.infoText}>{name}</Text>))
+        )}
+
+        <Text style={styles.subheading}>History of Generated Names:</Text>
+        {nameHistory.length === 0 ? ( <Text style={styles.infoText}>No History Yet.</Text>) : (
+          nameHistory.map((group, index) => (
+            <View key={index} style={styles.historyBox}>
+              <Text style={styles.historyTitle}>Generation {nameHistory.length - index}</Text>
+              {group.map((name, innerIndex) => (
+                <Text key={`${name}-${innerIndex}`} style={styles.infoText}>{name}</Text>
+              ))}
+            </View>
+          ))
+        )}
+
+        </View>)}
 
           {screen === 'oil' && (<View style={styles.card}>
         <Text style={styles.sectionTitle}>Oil Pump Monitor</Text></View>)}
@@ -215,6 +257,44 @@ const styles = StyleSheet.create ({
     borderRadius: 8,
     height: '100%',
   },
-
+  label: {
+    fontSize: 16,
+    marginBottom: 6,
+    color: '#405473',
+  },
+  subheading: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderRadius: 8,
+    padding: 8,
+    fontSize: 16,
+  },
+  generateButton: {
+    backgroundColor: '#4f46e5',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    marginTop: 12,
+    alignSelf: 'flex-start',
+  },
+  controlButtonText: {
+    color: '#ffffff',
+    fontWeight: '600',  },
+  historyBox: {
+    backgroundColor: '#f3f4f6',
+    borderRadius: 8,
+    padding: 10,   
+    marginBottom: 12,
+  },
+  historyTitle: {
+    fontWeight: '600',
+    marginBottom: 6,
+  },
 }
 );
