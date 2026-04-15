@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View, Pressable } from 'react-native';
 
-export default function Index() {
-  const [screen, setScreen] = useState('dashboard');
+
 
   const initialStocks = [
     { id: 1, name: '$NFR', value: 130, change: 0 },
@@ -22,6 +21,9 @@ export default function Index() {
 
   const firstNames = ['Alex', 'Edgar', 'Joshua', 'Joseph', 'Adriana', 'Kaushiki', 'Donovan', 'Sylas', 'Brenda', 'Isaiah', 'Nebo'];
   const lastNames = [ 'Vartanian', 'Rosales', 'Garcia', 'Bentley', 'Villalta', 'Dubey', 'Mcgilbray', 'Sanchez', 'Murillo', 'Urquilla', 'Paul'];
+
+  export default function Index() {
+  const [screen, setScreen] = useState('dashboard');
 
   const [stocks, setStocks] = useState(initialStocks);
   const [pumps, setPumps] = useState(initialPumps);
@@ -95,6 +97,18 @@ export default function Index() {
     setPumps((prevPumps) => prevPumps.map((pump) => pump.id === id ? { ...pump, active: !pump.active} : pump));
   };
 
+
+  const resetAll = () => {
+    setScreen('dashboard');
+    setStocks(initialStocks);
+    setStocksPaused(false);
+    setPumps(initialPumps);
+    setOilPaused(false);
+    setNameCount('10');
+    setGeneratedNames([]);
+    setNameHistory([]);
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Lab 5</Text>
@@ -106,13 +120,26 @@ export default function Index() {
               <NavButton label="Oil" active={screen === 'oil'} onPress={() => setScreen('oil')} />
       </View>
 
+    <View style={styles.globalControls}>
+      <Pressable style={styles.controlButton} onPress={() => setStocksPaused((prev) => !prev)}>
+        <Text style={styles.controlButtonText}>{stocksPaused ? 'Resume Stocks' : 'Pause Stocks'}</Text>
+      </Pressable>
+      <Pressable style={styles.controlButton} onPress={() => setOilPaused((prev) => !prev)}>
+        <Text style={styles.controlButtonText}>{oilPaused ? 'Resume Oil' : 'Pause Oil'}</Text>
+      </Pressable>
+      <Pressable style={styles.resetButton} onPress={resetAll}>
+        <Text style={styles.controlButtonText}>Reset All</Text>
+      </Pressable>
+    </View>
+
+
       {screen === 'dashboard' && (<View style={styles.card}>
         <Text style={styles.sectionTitle}>Dashboard</Text>
         
         <Text style={styles.infoText}>Total Stocks: {stocks.length}</Text>
         <Text style={styles.infoText}>Average Stock Value: {averageStockValue.toFixed(2)}</Text>
         <Text style={styles.infoText}>Top Stock: {topStock.name} (${topStock.value.toFixed(2)})</Text>
-        <Text style={styles.infoText}>Total Pumped: {totalPumped}</Text>
+        <Text style={styles.infoText}>Total Pumped: {totalPumped.toFixed(2)}</Text>
         <Text style={styles.infoText}>Active Pumps: {activePumpCount}</Text>
         <Text style={styles.infoText}>Generated Names: {generatedNames.length}</Text>
         <Text style={styles.infoText}>Name History: {nameHistory.length}</Text>
@@ -126,12 +153,12 @@ export default function Index() {
           <View key={stock.id} style={[styles.stockRow, topStock && stock.id === topStock.id ? styles.topStock : null]}>
             <View style={styles.stockHeader}>
               <Text style={styles.stockName}>{stock.name}</Text>
-              <Text style={styles.stockValue}>${stock.value}</Text>
+              <Text style={styles.stockValue}>${stock.value.toFixed(2)}</Text>
             </View>
             <Text style={[ styles.changeText, stock.change > 0 ? styles.positiveChange : stock.change < 0 ? styles.negativeChange : null]}>
             Change: {stock.change > 0 ? '+' : ''} {stock.change}</Text>
 
-            <View styles={styles.barBackground}> 
+            <View style={styles.barBackground}> 
               <View style={[styles.barFill, {width: `${(stock.value / 200) * 100}%`},
 
               ]}
@@ -143,7 +170,7 @@ export default function Index() {
 
            {screen === 'names' && (<View style={styles.card}>
         <Text style={styles.sectionTitle}>Name Generator</Text>
-        <Text styles={styles.label}>Number of Names to Generate:</Text>
+        <Text style={styles.label}>Number of Names to Generate:</Text>
         <TextInput style={styles.input} value={nameCount} onChangeText={setNameCount} keyboardType="numeric" placeholder="Enter a number" />
         <Pressable style={styles.generateButton} onPress={generateNames}>
           <Text style={styles.controlButtonText}>Generate Names</Text>
@@ -370,5 +397,24 @@ const styles = StyleSheet.create ({
     marginTop: 8,
     alignSelf: 'flex-start',
   },  
+  globalControls: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 20,
+    flexWrap: 'wrap',
+  },
+  controlButton: {
+    backgroundColor: '#5528a1',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },  
+  resetButton: {
+    backgroundColor: '#e62828',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+
 }
 );
